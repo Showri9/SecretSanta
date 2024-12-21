@@ -61,7 +61,7 @@ function drawSecretSanta() {
 }
 
 function sendEmails(assignments) {
-    fetch('https://secret-santa-silk-zeta.vercel.app/send-emails', {
+    fetch('https://secret-santa-backend-gamma.vercel.app/send-emails', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
