@@ -61,7 +61,7 @@ function drawSecretSanta() {
 }
 
 function sendEmails(assignments) {
-    fetch('/send-emails', {
+    fetch('http://localhost:3000/send-emails', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

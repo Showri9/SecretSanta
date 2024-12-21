@@ -2,10 +2,12 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const path = require('path');
+const cors = require('cors'); // Add this line
 
 const app = express();
 const port = 3000;
 
+app.use(cors()); // Add this line
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../Frontend')));
 
