@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     generateForm();
-    document.getElementById('authenticate').addEventListener('click', authenticate);
     document.getElementById('draw').addEventListener('click', drawSecretSanta);
 });
 
@@ -18,18 +17,6 @@ function generateForm() {
     `;
     form.addEventListener('submit', saveGift);
     formsContainer.appendChild(form);
-}
-
-function authenticate() {
-    const password = document.getElementById('password').value.trim();
-    const correctPassword = 'ss408'; // Replace with your actual password
-
-    if (password === correctPassword) {
-        document.getElementById('draw').disabled = false;
-        alert('Authentication successful! You can now draw Secret Santa.');
-    } else {
-        alert('Incorrect password. Please try again.');
-    }
 }
 
 function saveGift(event) {
@@ -66,29 +53,36 @@ function saveGift(event) {
 }
 
 function drawSecretSanta() {
-    fetch('https://secret-santa-gilt-five.vercel.app/participants') // Update this URL
+    const password = prompt('Please enter the password to draw Secret Santa:');
+    const correctPassword = 'ss_408'; // Replace with your actual password
+
+    if (password === correctPassword) {
+        fetch('https://secret-santa-gilt-five.vercel.app/participants') // Update this URL
         .then(response => response.json())
-        .then(participants => {
-            if (participants.length < 2) {
-                alert('At least two participants are required to draw Secret Santa.');
-                return;
-            }
+            .then(participants => {
+                if (participants.length < 2) {
+                    alert('At least two participants are required to draw Secret Santa.');
+                    return;
+                }
 
-            const shuffledParticipants = participants.sort(() => Math.random() - 0.5);
-            const assignments = {};
+                const shuffledParticipants = participants.sort(() => Math.random() - 0.5);
+                const assignments = {};
 
-            for (let i = 0; i < shuffledParticipants.length; i++) {
-                const giver = shuffledParticipants[i];
-                const receiver = shuffledParticipants[(i + 1) % shuffledParticipants.length];
-                assignments[giver.name] = receiver;
-            }
+                for (let i = 0; i < shuffledParticipants.length; i++) {
+                    const giver = shuffledParticipants[i];
+                    const receiver = shuffledParticipants[(i + 1) % shuffledParticipants.length];
+                    assignments[giver.name] = receiver;
+                }
 
-            sendEmails(assignments);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while fetching participants.');
-        });
+                sendEmails(assignments);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while fetching participants.');
+            });
+    } else {
+        alert('Incorrect password. Please try again.');
+    }
 }
 
 function sendEmails(assignments) {
