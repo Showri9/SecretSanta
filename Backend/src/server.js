@@ -2,14 +2,17 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const path = require('path');
-const cors = require('cors'); // Add this line
+const cors = require('cors');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-app.use(cors()); // Add this line
+app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../Frontend')));
+
+// In-memory data store
+let participants = [];
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -19,14 +22,32 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+app.post('/save-gift', (req, res) => {
+    const { name, email, gift, link } = req.body;
+    participants.push({ name, email, gift, link });
+    res.json({ success: true });
+});
+
+app.get('/participants', (req, res) => {
+    res.json(participants);
+});
+
 app.post('/send-emails', (req, res) => {
-    const { assignments, participants } = req.body;
+    const assignments = {};
+    const shuffledParticipants = participants.sort(() => Math.random() - 0.5);
+
+    for (let i = 0; i < shuffledParticipants.length; i++) {
+        const giver = shuffledParticipants[i];
+        const receiver = shuffledParticipants[(i + 1) % shuffledParticipants.length];
+        assignments[giver.name] = receiver;
+    }
+
     let emailPromises = [];
 
     for (const [giver, receiver] of Object.entries(assignments)) {
-        const email = participants.find(participant => participant.name === giver).email;
+        const email = giver.email;
         const subject = 'Your Secret Santa Assignment';
-        const text = `Hello ${giver},\n\nYou have been assigned to give a gift to someone special!\n\nGift: ${receiver.gift}\nLink: ${receiver.link}\n\nHappy gifting!\n\nBest regards,\nSecret Santa Team`;
+        const text = `Hello ${giver.name},\n\nYou have been assigned to give a gift to someone special!\n\nGift: ${receiver.gift}\nLink: ${receiver.link}\n\nHappy gifting!\n\nBest regards,\nSecret Santa Team`;
 
         const mailOptions = {
             from: 'secretsantahoneybrook408@gmail.com',
