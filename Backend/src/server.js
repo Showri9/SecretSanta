@@ -44,7 +44,13 @@ app.post('/send-emails', (req, res) => {
 
     let emailPromises = [];
 
-    for (const [giver, receiver] of Object.entries(assignments)) {
+    for (const [giverName, receiver] of Object.entries(assignments)) {
+        const giver = participants.find(participant => participant.name === giverName);
+        if (!giver) {
+            console.error(`Giver not found: ${giverName}`);
+            continue;
+        }
+
         const email = giver.email;
         const subject = 'Your Secret Santa Assignment';
         const text = `Hello ${giver.name},\n\nYou have been assigned to give a gift to someone special!\n\nGift: ${receiver.gift}\nLink: ${receiver.link}\n\nHappy gifting!\n\nBest regards,\nSecret Santa Team`;

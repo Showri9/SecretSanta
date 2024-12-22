@@ -1,72 +1,90 @@
 document.addEventListener('DOMContentLoaded', () => {
-    generateForms();
+    generateForm();
     document.getElementById('draw').addEventListener('click', drawSecretSanta);
 });
 
-let participants = [];
-
-function generateForms() {
+function generateForm() {
     const formsContainer = document.getElementById('forms-container');
-    for (let i = 1; i <= 10; i++) {
-        const form = document.createElement('form');
-        form.id = `form-${i}`;
-        form.innerHTML = `
-            <h3>Participant ${i}</h3>
-            <input type="text" id="name-${i}" placeholder="Your Name" required>
-            <input type="email" id="email-${i}" placeholder="Your Email" required>
-            <input type="text" id="gift-${i}" placeholder="Gift" required>
-            <input type="text" id="link-${i}" placeholder="Link" required>
-            <button type="submit">Submit</button>
-        `;
-        form.addEventListener('submit', saveGift);
-        formsContainer.appendChild(form);
-    }
+    const form = document.createElement('form');
+    form.id = 'form-1';
+    form.innerHTML = `
+        <h3>Participant</h3>
+        <input type="text" id="name-1" placeholder="Your Name" required>
+        <input type="email" id="email-1" placeholder="Your Email" required>
+        <input type="text" id="gift-1" placeholder="Gift" required>
+        <input type="text" id="link-1" placeholder="Link" required>
+        <button type="submit">Submit</button>
+    `;
+    form.addEventListener('submit', saveGift);
+    formsContainer.appendChild(form);
 }
 
 function saveGift(event) {
     event.preventDefault();
-    const formId = event.target.id;
-    const index = formId.split('-')[1];
-    const name = document.getElementById(`name-${index}`).value.trim();
-    const email = document.getElementById(`email-${index}`).value.trim();
-    const gift = document.getElementById(`gift-${index}`).value.trim();
-    const link = document.getElementById(`link-${index}`).value.trim();
+    const name = document.getElementById('name-1').value.trim();
+    const email = document.getElementById('email-1').value.trim();
+    const gift = document.getElementById('gift-1').value.trim();
+    const link = document.getElementById('link-1').value.trim();
 
     if (name && email && gift && link) {
-        participants.push({ name, email, gift, link });
-        document.getElementById(formId).reset();
-        document.getElementById(formId).style.display = 'none';
-        alert('Gift saved!');
+        fetch('https://secret-santa-gilt-five.vercel.app/save-gift', { // Update this URL
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, email, gift, link })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('form-1').reset();
+                alert('Gift saved!');
+            } else {
+                alert('Failed to save gift.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while saving the gift.');
+        });
     } else {
         alert('Please fill in all fields.');
     }
 }
 
 function drawSecretSanta() {
-    if (participants.length < 2) {
-        alert('At least two participants are required to draw Secret Santa.');
-        return;
-    }
+    fetch('https://secret-santa-gilt-five.vercel.app/participants') // Update this URL
+        .then(response => response.json())
+        .then(participants => {
+            if (participants.length < 2) {
+                alert('At least two participants are required to draw Secret Santa.');
+                return;
+            }
 
-    const shuffledParticipants = [...participants].sort(() => Math.random() - 0.5);
-    const assignments = {};
+            const shuffledParticipants = participants.sort(() => Math.random() - 0.5);
+            const assignments = {};
 
-    for (let i = 0; i < shuffledParticipants.length; i++) {
-        const giver = shuffledParticipants[i];
-        const receiver = shuffledParticipants[(i + 1) % shuffledParticipants.length];
-        assignments[giver.name] = receiver;
-    }
+            for (let i = 0; i < shuffledParticipants.length; i++) {
+                const giver = shuffledParticipants[i];
+                const receiver = shuffledParticipants[(i + 1) % shuffledParticipants.length];
+                assignments[giver.name] = receiver;
+            }
 
-    sendEmails(assignments);
+            sendEmails(assignments);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while fetching participants.');
+        });
 }
 
 function sendEmails(assignments) {
-    fetch('https://secret-santa-backend-gamma.vercel.app/send-emails', {
+    fetch('https://secret-santa-gilt-five.vercel.app/send-emails', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ assignments, participants })
+        body: JSON.stringify({ assignments })
     })
     .then(response => response.json())
     .then(data => {
