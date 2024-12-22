@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     generateForm();
+    document.getElementById('authenticate').addEventListener('click', authenticate);
     document.getElementById('draw').addEventListener('click', drawSecretSanta);
 });
 
@@ -17,6 +18,18 @@ function generateForm() {
     `;
     form.addEventListener('submit', saveGift);
     formsContainer.appendChild(form);
+}
+
+function authenticate() {
+    const password = document.getElementById('password').value.trim();
+    const correctPassword = 'ss408'; // Replace with your actual password
+
+    if (password === correctPassword) {
+        document.getElementById('draw').disabled = false;
+        alert('Authentication successful! You can now draw Secret Santa.');
+    } else {
+        alert('Incorrect password. Please try again.');
+    }
 }
 
 function saveGift(event) {
@@ -79,7 +92,7 @@ function drawSecretSanta() {
 }
 
 function sendEmails(assignments) {
-    fetch('https://secret-santa-gilt-five.vercel.app/send-emails', {
+    fetch('https://secret-santa-gilt-five.vercel.app/send-emails', { // Update this URL
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -91,7 +104,8 @@ function sendEmails(assignments) {
         if (data.success) {
             alert('Emails sent successfully!');
         } else {
-            alert('Failed to send emails.');
+            alert('Failed to send some emails.');
+            console.error('Email sending results:', data.results);
         }
     })
     .catch(error => {
