@@ -148,7 +148,7 @@ app.post('/send-emails', async (req, res) => {
             from: 'secretsantahoneybrook408@gmail.com',
             to: giver.email,
             subject: 'Your Secret Santa Assignment',
-            text: `Hi ${giver.name},\n\nYou are the Secret Santa for ${receiver.name} (${receiver.email}).\n\nGift: ${receiver.gift}\n\nHappy gifting!\n\nBest regards,\nSecret Santa Organizer`
+            text: `Hi ${giver.name},\n\nYou are the Secret Santa for ${receiver.name} (${receiver.email}).\n\nGift: ${receiver.gift}\n\nGift Link: ${receiver.link}\n\nHappy gifting!\n\nBest regards,\nSecret Santa Organizer`
         };
 
         try {
