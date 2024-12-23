@@ -39,7 +39,7 @@ if (useMongoDB) {
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'ecretsantahoneybrook408@gmail.com',
+        user: 'secretsantahoneybrook408@gmail.com',
         pass: 'berw zryx jgdt aukj'
     }
 });
