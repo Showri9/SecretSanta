@@ -1,4 +1,3 @@
-require('dotenv').config();
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
@@ -27,7 +26,8 @@ if (useMongoDB) {
         useNewUrlParser: true,
         useUnifiedTopology: true,
         maxPoolSize: 10, // Adjust pool size as needed
-        serverSelectionTimeoutMS: 50000 // Increase timeout to 50 seconds
+        serverSelectionTimeoutMS: 60000, // Increase server selection timeout to 60 seconds
+        connectTimeoutMS: 60000 // Increase connection timeout to 60 seconds
     });
 
     async function connectToDatabase() {
