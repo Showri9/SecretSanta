@@ -16,8 +16,14 @@ const useMongoDB = 'true';
 let participantsCollection;
 
 if (useMongoDB) {
-    const uri = process.env.MONGODB_URI || "mongodb+srv://showrirock:secretsanta@cluster0.h304h.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-    const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+    const uri = "mongodb+srv://showrirock:secretsanta@cluster0.h304h.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+    const client = new MongoClient(uri, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        maxPoolSize: 10, // Adjust pool size as needed
+        serverSelectionTimeoutMS: 50000 // Increase timeout to 50 seconds
+    });
+    
 
     async function connectToDatabase() {
         try {
