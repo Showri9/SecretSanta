@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
 const path = require('path');
+const dns = require('dns');
 
 const app = express();
 app.use(cors());
@@ -20,18 +21,19 @@ app.use((req, res, next) => {
 const useMongoDB = 'true';
 let participantsCollection;
 let isConnected = false;
+let client;
 
-if (useMongoDB) {
-    const uri = "mongodb+srv://showrirock:secretsanta@cluster0.h304h.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-    const client = new MongoClient(uri, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        maxPoolSize: 10, // Adjust pool size as needed
-        serverSelectionTimeoutMS: 60000, // Increase server selection timeout to 60 seconds
-        connectTimeoutMS: 60000 // Increase connection timeout to 60 seconds
-    });
+async function connectToDatabase() {
+    if (!client) {
+        const uri = "mongodb+srv://showrirock:secretsanta@cluster0.h304h.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+        client = new MongoClient(uri, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            maxPoolSize: 10, // Adjust pool size as needed
+            serverSelectionTimeoutMS: 60000, // Increase server selection timeout to 60 seconds
+            connectTimeoutMS: 60000 // Increase connection timeout to 60 seconds
+        });
 
-    async function connectToDatabase() {
         while (true) {
             try {
                 await client.connect();
@@ -39,6 +41,16 @@ if (useMongoDB) {
                 participantsCollection = database.collection('participants');
                 isConnected = true;
                 console.log("Connected to MongoDB Atlas", participantsCollection);
+
+                // Log the outgoing IP address
+                dns.lookup(require('os').hostname(), (err, address) => {
+                    if (err) {
+                        console.error('Error getting outgoing IP address:', err);
+                    } else {
+                        console.log('Outgoing request from IP:', address);
+                    }
+                });
+
                 break; // Exit the loop once connected
             } catch (error) {
                 console.error('Error connecting to MongoDB Atlas:', error);
@@ -47,7 +59,9 @@ if (useMongoDB) {
             }
         }
     }
+}
 
+if (useMongoDB) {
     connectToDatabase();
 } else {
     // In-memory data store
@@ -76,6 +90,7 @@ app.post('/save-gift', async (req, res) => {
     const { name, email, gift, link, isKid } = req.body;
     try {
         if (useMongoDB) {
+            console.log("participantsCollection in save-gift", participantsCollection);
             const existingParticipants = await participantsCollection.find({ email }).toArray();
             const nonKidParticipant = existingParticipants.find(participant => !participant.isKid);
             if (nonKidParticipant && !isKid) {
@@ -103,6 +118,7 @@ app.get('/participants', async (req, res) => {
     try {
         let participants;
         if (useMongoDB) {
+            console.log("participantsCollection in participants", participantsCollection);
             participants = await participantsCollection.find().toArray();
         } else {
             participants = participantsCollection;
@@ -119,6 +135,7 @@ app.delete('/delete-participant', async (req, res) => {
     const { name } = req.body;
     try {
         if (useMongoDB) {
+            console.log("participantsCollection in delete-participant", participantsCollection);
             const result = await participantsCollection.deleteOne({ name });
             if (result.deletedCount > 0) {
                 res.json({ success: true, message: 'Participant deleted successfully.' });
@@ -162,6 +179,7 @@ app.post('/send-emails', async (req, res) => {
     const emailPromises = Object.entries(assignments).map(async ([giverName, receiver]) => {
         let giver;
         if (useMongoDB) {
+            console.log("participantsCollection in send-emails", participantsCollection);
             giver = await participantsCollection.findOne({ name: giverName });
         } else {
             giver = participantsCollection.find(participant => participant.name === giverName);
