@@ -14,13 +14,19 @@
             <!-- Forms will be generated here by JavaScript -->
         </div>
         <p class="note">
-            Note: <br>
-            1. Make sure you type your email address correctly. <br>
-            2. Every individual should have a different email.<br>
-            3. Submit only once.<br>
-            4. Do not make mistakes.
+            <span class="red-background">NOTE: Read instructions below Contact ADMIN - SHOWRI in case any other issues</span><br>
+            1. Select checkbox kid if the participant is a kid. <br>
+            2. Make sure you type your email address correctly. <br>
+            3. Every individual should use a different email, except kid -> kid can have either of parent email. <br>
+            4. Please do not submit multiple or duplicate entries for the same person. <br>
+            5. Try not to make mistakes.<br>
+            6. If made a mistake use delete a participant, enter the name and click on the "<span class="red-text">DELETE PARTICIPANT</span>" button and then re-submit<br>
         </p>
-        <button id="draw">Draw Secret Santa</button>
+        <button id="admin-use">Admin Use</button>
+        <button id="draw" style="display:none;">Draw Secret Santa</button>
+        <button id="reveal" style="display:none;">Reveal Secret Santa</button>
+        <button id="show-participants" style="display:none;">Show Participants</button>
+        <button id="delete-participant">Delete Participant</button>
     </div>
     <script src="scripts/app.js"></script>
 </body>

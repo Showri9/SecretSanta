@@ -79,6 +79,17 @@ app.post('/send-emails', (req, res) => {
         .catch(() => res.status(500).json({ success: false }));
 });
 
+app.delete('/delete-participant', (req, res) => {
+    const { name } = req.body;
+    const initialLength = participants.length;
+    participants = participants.filter(participant => participant.name !== name);
+    if (participants.length < initialLength) {
+        res.json({ success: true, message: `Participant ${name} deleted.` });
+    } else {
+        res.json({ success: false, message: `Participant ${name} not found.` });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });

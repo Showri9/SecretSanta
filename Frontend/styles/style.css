@@ -2,36 +2,53 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Be Vietnam Pro', sans-serif;
-    background: url('../images/christmas.jpg') no-repeat center center fixed; /* Use the relative path to the image */
-    background-size: cover; /* Ensure the image covers the entire background area */
+    background: url('../images/christmas.jpg') no-repeat center center fixed;
+    /* Use the relative path to the image */
+    background-size: cover;
+    /* Ensure the image covers the entire background area */
     color: white;
 }
 
 .container {
     text-align: center;
     padding: 20px;
-    background: rgba(0, 0, 0, 0); /* Dark background to ensure text visibility */
+    background: rgba(0, 0, 0, 0);
+    /* Dark background to ensure text visibility */
     border-radius: 10px;
     margin: 124px auto;
     width: 80%;
     max-width: 600px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0);
 }
+
 .note {
     text-align: left;
     font-family: 'Times New Roman', Times, serif;
-    color: #fff529;
+    /* color: #fff529; */
 }
+
+.red-background {
+    background: #ff0000;
+    text-align: center;
+    display: block;
+}
+
+.red-text {
+    color: #ff0000;
+}
+
 h1 {
     font-size: 3em;
     margin-bottom: 20px;
-    color: #ff0000; /* Red color for the title */
+    color: #ff0000;
+    /* Red color for the title */
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     font-family: 'Pacifico', cursive;
 }
 
 button {
-    background-color: #008000; /* Green color for the button */
+    background-color: #008000;
+    /* Green color for the button */
     color: white;
     border: none;
     padding: 10px 20px;
@@ -41,12 +58,27 @@ button {
     border-radius: 5px;
     margin-top: 20px;
     transition: background-color 0.3s, box-shadow 0.3s;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0); /* Add shadow effect */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0);
+    /* Add shadow effect */
 }
 
 button:hover {
-    background-color: #006400; /* Darker green on hover */
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4); /* Enhance shadow on hover */
+    background-color: #006400;
+    /* Darker green on hover */
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+    /* Enhance shadow on hover */
+}
+
+button#delete-participant {
+    background-color: #ff0000;
+    /* Red color for Admin Use and Delete Participant buttons */
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
 }
 
 input[type="text"],
@@ -78,7 +110,8 @@ ul li {
 /* For tablets (portrait and landscape) */
 @media (max-width: 768px) {
     body {
-        background-size: cover; /* Adjust background size for tablets */
+        background-size: cover;
+        /* Adjust background size for tablets */
     }
 
     .container {
@@ -105,7 +138,8 @@ ul li {
 /* For mobile phones */
 @media (max-width: 480px) {
     body {
-        background-size: cover; /* Adjust background size for mobile phones */
+        background-size: cover;
+        /* Adjust background size for mobile phones */
     }
 
     .container {
