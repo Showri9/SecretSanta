@@ -133,10 +133,16 @@ app.delete('/delete-all-participants', async (req, res) => {
 app.post('/send-emails', async (req, res) => {
     const { assignments } = req.body;
     const emailPromises = Object.entries(assignments).map(async ([giverName, receiver]) => {
-        const giver = participantsCollection.find(participant => participant.name === giverName);
+        let giver;
+        if (useMongoDB) {
+            giver = await participantsCollection.findOne({ name: giverName });
+        } else {
+            giver = participantsCollection.find(participant => participant.name === giverName);
+        }
+
         if (!giver) {
             console.error(`Giver not found: ${giverName}`);
-            return;
+            return { success: false, email: null };
         }
         const mailOptions = {
             from: 'secretsantahoneybrook408@gmail.com',
