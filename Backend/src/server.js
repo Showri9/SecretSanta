@@ -39,8 +39,8 @@ if (useMongoDB) {
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: process.env.EMAIL_USER ? process.env.EMAIL_USER : 'ecretsantahoneybrook408@gmail.com',
-        pass: process.env.EMAIL_PASS ? process.env.EMAIL_PASS : 'berw zryx jgdt aukj'
+        user: 'ecretsantahoneybrook408@gmail.com',
+        pass:'berw zryx jgdt aukj'
     }
 });
 
@@ -62,7 +62,7 @@ app.post('/save-gift', async (req, res) => {
             if (nonKidParticipant && !isKid) {
                 return res.json({ success: false, message: 'This email is already registered for a non-kid participant. Please use a different email.' });
             }
-            participantsCollection.push({ name, email, gift, link });
+            participantsCollection.push({ name, email, gift, link, isKid });
         }
         res.json({ success: true, message: 'Gift saved!' });
     } catch (error) {
@@ -113,17 +113,33 @@ app.delete('/delete-participant', async (req, res) => {
     }
 });
 
+// Delete all participants
+app.delete('/delete-all-participants', async (req, res) => {
+    try {
+        if (useMongoDB) {
+            const result = await participantsCollection.deleteMany({});
+            res.json({ success: true, message: 'All participants deleted successfully.' });
+        } else {
+            participantsCollection = [];
+            res.json({ success: true, message: 'All participants deleted successfully.' });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        res.json({ success: false, message: 'An error occurred while deleting all participants.' });
+    }
+});
+
 // Send emails
 app.post('/send-emails', async (req, res) => {
     const { assignments } = req.body;
     const emailPromises = Object.entries(assignments).map(async ([giverName, receiver]) => {
-        const giver = participants.find(participant => participant.name === giverName);
+        const giver = participantsCollection.find(participant => participant.name === giverName);
         if (!giver) {
             console.error(`Giver not found: ${giverName}`);
             return;
         }
         const mailOptions = {
-            from: process.env.EMAIL_USER ? process.env.EMAIL_USER : 'secretsantahoneybrook408@gmail.com',
+            from: 'secretsantahoneybrook408@gmail.com',
             to: giver.email,
             subject: 'Your Secret Santa Assignment',
             text: `Hi ${giver.name},\n\nYou are the Secret Santa for ${receiver.name} (${receiver.email}).\n\nGift: ${receiver.gift}\n\nHappy gifting!\n\nBest regards,\nSecret Santa Organizer`
