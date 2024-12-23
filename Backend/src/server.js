@@ -11,6 +11,12 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../Frontend')));
 
+// Middleware to log IP address
+app.use((req, res, next) => {
+    console.log('Incoming request from IP:', req.ip);
+    next();
+});
+
 // MongoDB connection
 const useMongoDB = 'true';
 let participantsCollection;
