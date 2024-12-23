@@ -19,6 +19,7 @@ app.use((req, res, next) => {
 // MongoDB connection
 const useMongoDB = 'true';
 let participantsCollection;
+let isConnected = false;
 
 if (useMongoDB) {
     const uri = "mongodb+srv://showrirock:secretsanta@cluster0.h304h.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
@@ -36,6 +37,7 @@ if (useMongoDB) {
                 await client.connect();
                 const database = client.db('secretsanta');
                 participantsCollection = database.collection('participants');
+                isConnected = true;
                 console.log("Connected to MongoDB Atlas", participantsCollection);
                 break; // Exit the loop once connected
             } catch (error) {
@@ -50,7 +52,16 @@ if (useMongoDB) {
 } else {
     // In-memory data store
     participantsCollection = [];
+    isConnected = true;
 }
+
+// Middleware to check MongoDB connection
+app.use((req, res, next) => {
+    if (useMongoDB && !isConnected) {
+        return res.status(503).send('Service Unavailable: Database connection not established');
+    }
+    next();
+});
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -182,7 +193,7 @@ app.post('/send-emails', async (req, res) => {
         res.json({ success: true, results });
     } catch (error) {
         console.error('Error:', error);
-        res.json({ success: false, message: 'An error occurred while sending emails. ' });
+        res.json({ success: false, message: 'An error occurred while sending emails.' });
     }
 });
 
