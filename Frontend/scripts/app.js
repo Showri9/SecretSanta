@@ -39,7 +39,7 @@ function saveGift(event) {
     const email = document.getElementById('email-1').value.trim();
     const gift = document.getElementById('gift-1').value.trim();
     const link = document.getElementById('link-1').value.trim();
-    const isKid = document.getElementById('kid-1').checked;
+    const isKid = document.getElementById('kid-1').checked ? true : false;
 
     if (!isValidEmail(email)) {
         alert('Please enter a valid email address.');
@@ -47,34 +47,34 @@ function saveGift(event) {
     }
 
     if (name && email && gift && link) {
-        fetch('https://secret-santa-gilt-five.vercel.app/participants') // Update this URL
+        fetch('https://secret-santa-gilt-five.vercel.appparticipants') // Update this URL
             .then(response => response.json())
             .then(participants => {
                 const emailExists = participants.some(participant => participant.email === email);
-                if (emailExists && !isKid) {
-                    alert('This email is already registered. Please use a different email.');
-                } else {
-                    fetch('https://secret-santa-gilt-five.vercel.app/save-gift', { // Update this URL
+                // if (emailExists && !isKid) {
+                //     alert('This email is already registered. Please use a different email.');
+                // } else {
+                    fetch('https://secret-santa-gilt-five.vercel.appsave-gift', { // Update this URL
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ name, email, gift, link })
+                        body: JSON.stringify({ name, email, gift, link, isKid })
                     })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
                                 document.getElementById('form-1').reset();
-                                alert('Gift saved!');
+                                alert(data.message);
                             } else {
-                                alert('Failed to save gift.');
+                                alert(data.message);
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
                             alert('An error occurred while saving the gift.');
                         });
-                }
+                // }
             }).catch(error => {
                 console.error('Error:', error);
                 alert('An error occurred while checking the email.');
@@ -90,7 +90,7 @@ function drawSecretSanta() {
     const correctPassword = 'ss_408'; // Replace with your actual password
 
     if (password === correctPassword) {
-        fetch('https://secret-santa-gilt-five.vercel.app/participants') // Update this URL
+        fetch('https://secret-santa-gilt-five.vercel.appparticipants') // Update this URL
             .then(response => response.json())
             .then(participants => {
                 if (participants.length < 2) {
@@ -119,7 +119,7 @@ function drawSecretSanta() {
 }
 
 function revealSecretSanta() {
-    fetch('https://secret-santa-gilt-five.vercel.app/participants') // Update this URL
+    fetch('https://secret-santa-gilt-five.vercel.appparticipants') // Update this URL
         .then(response => response.json())
         .then(participants => {
             if (participants.length < 2) {
@@ -150,7 +150,7 @@ function revealSecretSanta() {
 }
 
 function showParticipants() {
-    fetch('https://secret-santa-gilt-five.vercel.app/participants') // Update this URL
+    fetch('https://secret-santa-gilt-five.vercel.appparticipants') // Update this URL
         .then(response => response.json())
         .then(participants => {
             if (participants.length === 0) {
@@ -160,7 +160,7 @@ function showParticipants() {
 
             let message = 'Participants:\n';
             participants.forEach(participant => {
-                message += `${participant.name} (${participant.email})\n`;
+                message += `${participant.name} (${participant.email}) (${participant.isKid ? 'kid' : 'adult'})\n`;
             });
             alert(message);
         })
@@ -177,7 +177,7 @@ function deleteParticipant() {
         return;
     }
 
-    fetch('https://secret-santa-gilt-five.vercel.app/delete-participant', { // Update this URL
+    fetch('https://secret-santa-gilt-five.vercel.appdelete-participant', { // Update this URL
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json'
@@ -213,7 +213,7 @@ function adminUse() {
 }
 
 function sendEmails(assignments) {
-    fetch('https://secret-santa-gilt-five.vercel.app/send-emails', { // Update this URL
+    fetch('https://secret-santa-gilt-five.vercel.appsend-emails', { // Update this URL
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

@@ -1,95 +1,153 @@
+require('dotenv').config();
 const express = require('express');
-const nodemailer = require('nodemailer');
+const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
-const path = require('path');
+const nodemailer = require('nodemailer');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
-const port = process.env.PORT || 3000;
-
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../Frontend')));
 
-// In-memory data store
-let participants = [];
+// MongoDB connection
+const useMongoDB = 'true';
+let participantsCollection;
+
+if (useMongoDB) {
+    const uri = process.env.MONGODB_URI || "mongodb+srv://showrirock:secretsanta@cluster0.h304h.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+    const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+    async function connectToDatabase() {
+        try {
+            await client.connect();
+            const database = client.db('secretsanta');
+            participantsCollection = database.collection('participants');
+            console.log("Connected to MongoDB Atlas");
+        } catch (error) {
+            console.error('Error connecting to MongoDB Atlas:', error);
+        }
+    }
+
+    connectToDatabase();
+} else {
+    // In-memory data store
+    participantsCollection = [];
+}
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'secretsantahoneybrook408@gmail.com',
-        pass: 'berw zryx jgdt aukj' // Use the app password generated from Google
+        user: process.env.EMAIL_USER ? process.env.EMAIL_USER : 'ecretsantahoneybrook408@gmail.com',
+        pass: process.env.EMAIL_PASS ? process.env.EMAIL_PASS : 'berw zryx jgdt aukj'
     }
 });
 
-app.post('/save-gift', (req, res) => {
-    const { name, email, gift, link } = req.body;
-    participants.push({ name, email, gift, link });
-    res.json({ success: true });
-});
-
-app.get('/participants', (req, res) => {
-    res.json(participants);
-});
-
-app.post('/send-emails', (req, res) => {
-    const assignments = {};
-    const shuffledParticipants = participants.sort(() => Math.random() - 0.5);
-
-    for (let i = 0; i < shuffledParticipants.length; i++) {
-        const giver = shuffledParticipants[i];
-        const receiver = shuffledParticipants[(i + 1) % shuffledParticipants.length];
-        assignments[giver.name] = receiver;
+// Save a gift
+app.post('/save-gift', async (req, res) => {
+    const { name, email, gift, link, isKid } = req.body;
+    try {
+        if (useMongoDB) {
+            const existingParticipants = await participantsCollection.find({ email }).toArray();
+            const nonKidParticipant = existingParticipants.find(participant => !participant.isKid);
+            if (nonKidParticipant && !isKid) {
+                return res.json({ success: false, message: 'This email is already registered for a non-kid participant. Please use a different email.' });
+            }
+            const participant = { name, email, gift, link, isKid };
+            await participantsCollection.insertOne(participant);
+        } else {
+            const existingParticipants = participantsCollection.filter(p => p.email === email);
+            const nonKidParticipant = existingParticipants.find(p => !p.isKid);
+            if (nonKidParticipant && !isKid) {
+                return res.json({ success: false, message: 'This email is already registered for a non-kid participant. Please use a different email.' });
+            }
+            participantsCollection.push({ name, email, gift, link });
+        }
+        res.json({ success: true, message: 'Gift saved!' });
+    } catch (error) {
+        console.error('Error:', error);
+        res.json({ success: false, message: 'An error occurred while saving the gift.' });
     }
+});
 
-    let emailPromises = [];
+// Get all participants
+app.get('/participants', async (req, res) => {
+    try {
+        let participants;
+        if (useMongoDB) {
+            participants = await participantsCollection.find().toArray();
+        } else {
+            participants = participantsCollection;
+        }
+        res.json(participants);
+    } catch (error) {
+        console.error('Error:', error);
+        res.json({ success: false, message: 'An error occurred while retrieving participants.' });
+    }
+});
 
-    for (const [giverName, receiver] of Object.entries(assignments)) {
+// Delete a participant
+app.delete('/delete-participant', async (req, res) => {
+    const { name } = req.body;
+    try {
+        if (useMongoDB) {
+            const result = await participantsCollection.delete({ name });
+            if (result.deletedCount > 0) {
+                res.json({ success: true, message: 'Participant deleted successfully.' });
+            } else {
+                res.json({ success: false, message: 'Participant not found.' });
+            }
+        } else {
+            const index = participantsCollection.findIndex(p => p.name === name);
+            if (index !== -1) {
+                participantsCollection.splice(index, 1);
+                res.json({ success: true, message: 'Participant deleted successfully.' });
+            } else {
+                res.json({ success: false, message: 'Participant not found.' });
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        res.json({ success: false, message: 'An error occurred while deleting the participant.' });
+    }
+});
+
+// Send emails
+app.post('/send-emails', async (req, res) => {
+    const { assignments } = req.body;
+    const emailPromises = Object.entries(assignments).map(async ([giverName, receiver]) => {
         const giver = participants.find(participant => participant.name === giverName);
         if (!giver) {
             console.error(`Giver not found: ${giverName}`);
-            continue;
+            return;
         }
-
-        const email = giver.email;
-        const subject = 'Your Secret Santa Assignment';
-        const text = `Hello ${giver.name},\n\nYou have been assigned to give a gift to someone special!\n\nGift: ${receiver.gift}\nLink: ${receiver.link}\n\nHappy gifting!\n\nBest regards,\nSecret Santa Team`;
-
         const mailOptions = {
-            from: 'secretsantahoneybrook408@gmail.com',
-            to: email,
-            subject: subject,
-            text: text,
-            headers: {
-                'X-Priority': '1',
-                'X-MSMail-Priority': 'High',
-                'Importance': 'High'
-            }
+            from: process.env.EMAIL_USER ? process.env.EMAIL_USER : 'secretsantahoneybrook408@gmail.com',
+            to: giver.email,
+            subject: 'Your Secret Santa Assignment',
+            text: `Hi ${giver.name},\n\nYou are the Secret Santa for ${receiver.name} (${receiver.email}).\n\nGift: ${receiver.gift}\n\nHappy gifting!\n\nBest regards,\nSecret Santa Organizer`
         };
 
-        emailPromises.push(
-            transporter.sendMail(mailOptions)
-                .then(info => console.log('Email sent: ' + info.response))
-                .catch(error => console.error('Error sending email:', error))
-        );
-    }
+        try {
+            await transporter.sendMail(mailOptions);
+            return { success: true, email: giver.email };
+        } catch (error) {
+            console.error('Error sending email to:', giver.email, error);
+            return { success: false, email: giver.email };
+        }
+    });
 
-    Promise.all(emailPromises)
-        .then(() => res.json({ success: true }))
-        .catch(() => res.status(500).json({ success: false }));
-});
-
-app.delete('/delete-participant', (req, res) => {
-    const { name } = req.body;
-    const initialLength = participants.length;
-    participants = participants.filter(participant => participant.name !== name);
-    if (participants.length < initialLength) {
-        res.json({ success: true, message: `Participant ${name} deleted.` });
-    } else {
-        res.json({ success: false, message: `Participant ${name} not found.` });
+    try {
+        const results = await Promise.all(emailPromises);
+        res.json({ success: true, results });
+    } catch (error) {
+        console.error('Error:', error);
+        res.json({ success: false, message: 'An error occurred while sending emails.' });
     }
 });
 
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
