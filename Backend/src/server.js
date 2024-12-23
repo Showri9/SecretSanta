@@ -24,7 +24,7 @@ if (useMongoDB) {
             await client.connect();
             const database = client.db('secretsanta');
             participantsCollection = database.collection('participants');
-            console.log("Connected to MongoDB Atlas");
+            console.log("Connected to MongoDB Atlas", participantsCollection);
         } catch (error) {
             console.error('Error connecting to MongoDB Atlas:', error);
         }
