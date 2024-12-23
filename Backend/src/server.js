@@ -23,7 +23,6 @@ if (useMongoDB) {
         maxPoolSize: 10, // Adjust pool size as needed
         serverSelectionTimeoutMS: 50000 // Increase timeout to 50 seconds
     });
-    
 
     async function connectToDatabase() {
         try {
@@ -33,6 +32,7 @@ if (useMongoDB) {
             console.log("Connected to MongoDB Atlas", participantsCollection);
         } catch (error) {
             console.error('Error connecting to MongoDB Atlas:', error);
+            setTimeout(connectToDatabase, 5000); // Retry connection after 5 seconds
         }
     }
 
@@ -150,6 +150,7 @@ app.post('/send-emails', async (req, res) => {
             console.error(`Giver not found: ${giverName}`);
             return { success: false, email: null };
         }
+
         const mailOptions = {
             from: 'secretsantahoneybrook408@gmail.com',
             to: giver.email,
