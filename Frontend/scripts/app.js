@@ -8,7 +8,7 @@ function generateForm() {
     const form = document.createElement('form');
     form.id = 'form-1';
     form.innerHTML = `
-        <h3>Participant</h3>
+        <h3>PARTICIPANT</h3>
         <input type="text" id="name-1" placeholder="Your Name" required>
         <input type="email" id="email-1" placeholder="Your Email" required>
         <input type="text" id="gift-1" placeholder="Gift" required>
