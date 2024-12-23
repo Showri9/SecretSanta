@@ -31,14 +31,18 @@ if (useMongoDB) {
     });
 
     async function connectToDatabase() {
-        try {
-            await client.connect();
-            const database = client.db('secretsanta');
-            participantsCollection = database.collection('participants');
-            console.log("Connected to MongoDB Atlas", participantsCollection);
-        } catch (error) {
-            console.error('Error connecting to MongoDB Atlas:', error);
-            setTimeout(connectToDatabase, 5000); // Retry connection after 5 seconds
+        while (true) {
+            try {
+                await client.connect();
+                const database = client.db('secretsanta');
+                participantsCollection = database.collection('participants');
+                console.log("Connected to MongoDB Atlas", participantsCollection);
+                break; // Exit the loop once connected
+            } catch (error) {
+                console.error('Error connecting to MongoDB Atlas:', error);
+                console.log('Retrying connection in 5 seconds...');
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds before retrying
+            }
         }
     }
 
