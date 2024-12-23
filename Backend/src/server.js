@@ -92,7 +92,7 @@ app.delete('/delete-participant', async (req, res) => {
     const { name } = req.body;
     try {
         if (useMongoDB) {
-            const result = await participantsCollection.delete({ name });
+            const result = await participantsCollection.deleteOne({ name });
             if (result.deletedCount > 0) {
                 res.json({ success: true, message: 'Participant deleted successfully.' });
             } else {
