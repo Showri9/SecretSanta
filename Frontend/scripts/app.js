@@ -47,14 +47,14 @@ function saveGift(event) {
     }
 
     if (name && email && gift && link) {
-        fetch('https://secret-santa-gilt-five.vercel.appparticipants') // Update this URL
+        fetch('https://secret-santa-gilt-five.vercel.app/participants') // Update this URL
             .then(response => response.json())
             .then(participants => {
                 const emailExists = participants.some(participant => participant.email === email);
                 // if (emailExists && !isKid) {
                 //     alert('This email is already registered. Please use a different email.');
                 // } else {
-                    fetch('https://secret-santa-gilt-five.vercel.appsave-gift', { // Update this URL
+                    fetch('https://secret-santa-gilt-five.vercel.app/save-gift', { // Update this URL
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -90,7 +90,7 @@ function drawSecretSanta() {
     const correctPassword = 'ss_408'; // Replace with your actual password
 
     if (password === correctPassword) {
-        fetch('https://secret-santa-gilt-five.vercel.appparticipants') // Update this URL
+        fetch('https://secret-santa-gilt-five.vercel.app/participants') // Update this URL
             .then(response => response.json())
             .then(participants => {
                 if (participants.length < 2) {
@@ -119,7 +119,7 @@ function drawSecretSanta() {
 }
 
 function revealSecretSanta() {
-    fetch('https://secret-santa-gilt-five.vercel.appparticipants') // Update this URL
+    fetch('https://secret-santa-gilt-five.vercel.app/participants') // Update this URL
         .then(response => response.json())
         .then(participants => {
             if (participants.length < 2) {
@@ -150,7 +150,7 @@ function revealSecretSanta() {
 }
 
 function showParticipants() {
-    fetch('https://secret-santa-gilt-five.vercel.appparticipants') // Update this URL
+    fetch('https://secret-santa-gilt-five.vercel.app/participants') // Update this URL
         .then(response => response.json())
         .then(participants => {
             if (participants.length === 0) {
@@ -177,7 +177,7 @@ function deleteParticipant() {
         return;
     }
 
-    fetch('https://secret-santa-gilt-five.vercel.appdelete-participant', { // Update this URL
+    fetch('https://secret-santa-gilt-five.vercel.app/delete-participant', { // Update this URL
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json'
@@ -213,7 +213,7 @@ function adminUse() {
 }
 
 function sendEmails(assignments) {
-    fetch('https://secret-santa-gilt-five.vercel.appsend-emails', { // Update this URL
+    fetch('https://secret-santa-gilt-five.vercel.app/send-emails', { // Update this URL
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
