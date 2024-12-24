@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
 const path = require('path');
-const dns = require('dns');
+const axios = require('axios');
 
 const app = express();
 app.use(cors());
@@ -30,8 +30,8 @@ async function connectToDatabase() {
             useNewUrlParser: true,
             useUnifiedTopology: true,
             maxPoolSize: 10, // Adjust pool size as needed
-            serverSelectionTimeoutMS: 60000, // Increase server selection timeout to 60 seconds
-            connectTimeoutMS: 60000 // Increase connection timeout to 60 seconds
+            serverSelectionTimeoutMS: 120000, // Increase server selection timeout to 120 seconds
+            connectTimeoutMS: 120000 // Increase connection timeout to 120 seconds
         });
 
         while (true) {
@@ -43,13 +43,8 @@ async function connectToDatabase() {
                 console.log("Connected to MongoDB Atlas", participantsCollection);
 
                 // Log the outgoing IP address
-                dns.lookup(require('os').hostname(), (err, address) => {
-                    if (err) {
-                        console.error('Error getting outgoing IP address:', err);
-                    } else {
-                        console.log('Outgoing request from IP:', address);
-                    }
-                });
+                const response = await axios.get('https://httpbin.org/ip');
+                console.log('Outgoing request from IP:', response.data.origin);
 
                 break; // Exit the loop once connected
             } catch (error) {
